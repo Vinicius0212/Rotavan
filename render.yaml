@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: rotavan
+    runtime: docker
+    plan: free
+    healthCheckPath: /api/saude
+    envVars:
+      - key: ROTAVAN_ADMIN_SENHA
+        sync: false
+      - key: ROTAVAN_CONFIG
+        sync: false

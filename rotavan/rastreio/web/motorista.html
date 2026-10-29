@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="referrer" content="no-referrer">
+<meta name="theme-color" content="#f2b705">
+<title>RotaVan · Motorista</title>
+<link rel="manifest" id="manifesto" href="/manifest.webmanifest">
+<script>document.getElementById("manifesto").href = "/manifest/m/" + location.pathname.split("/")[2];</script>
+<link rel="icon" href="/static/icone-192.png">
+<link rel="stylesheet" href="/static/leaflet/leaflet.css">
+<link rel="stylesheet" href="/static/estilo.css">
+</head>
+<body>
+<header class="topo">
+  <div class="logo"><svg viewBox="0 0 24 24" fill="#f2b705"><path d="M3 6a2 2 0 0 1 2-2h10.5a2 2 0 0 1 1.7.95L20 9.5l.9.4A2 2 0 0 1 22 11.7V16a1 1 0 0 1-1 1h-1.2a2.8 2.8 0 0 1-5.6 0H9.8a2.8 2.8 0 0 1-5.6 0H4a1 1 0 0 1-1-1V6Z"/></svg></div>
+  <div><h1>RotaVan · Motorista</h1><small id="cab">carregando…</small></div>
+</header>
+<main>
+  <div id="erro" class="aviso vermelho oculto"></div>
+
+  <!-- sem trajeto em andamento -->
+  <section id="tela-inicio" class="oculto">
+    <div class="cartao">
+      <h2>Iniciar trajeto</h2>
+      <p class="sub" style="margin-top:0">O sistema calcula a melhor ordem de paradas para hoje (sem quem avisou falta) e
+        começa a enviar a posição da van para as famílias.</p>
+      <div class="grade2" style="margin-top:14px">
+        <button class="marca" data-sentido="ida">Ida<br><span style="font-weight:500;font-size:13px">casa → escola</span></button>
+        <button class="marca" data-sentido="volta">Volta<br><span style="font-weight:500;font-size:13px">escola → casa</span></button>
+      </div>
+      <label class="check"><input type="checkbox" id="simular">
+        <span><b>Modo demonstração</b><br><span class="pequeno">A van "anda sozinha" pelo trajeto, com trânsito simulado —
+        para testar a tela dos pais sem sair de carro.</span></span></label>
+      <div id="vel-box" class="oculto linha-flex"><span class="pequeno">Velocidade da demonstração</span><span class="espaco"></span>
+        <select id="mult" style="width:auto"><option value="1">1× (tempo real)</option><option value="5">5×</option><option value="10" selected>10×</option><option value="20">20×</option></select></div>
+    </div>
+    <div class="cartao">
+      <h2>Avisos de falta para hoje</h2>
+      <ul id="faltas" class="lista"></ul>
+    </div>
+    <p class="pequeno">Mantenha esta tela aberta durante o trajeto (com o celular no suporte). A posição só é enviada
+      enquanto um trajeto estiver em andamento.</p>
+  </section>
+
+  <!-- trajeto em andamento -->
+  <section id="tela-viagem" class="oculto">
+    <div class="linha-flex" style="margin-bottom:10px">
+      <span id="selo-gps" class="selo"><span class="ponto"></span><span>GPS</span></span>
+      <span id="selo-rota" class="selo"></span>
+      <span class="espaco"></span>
+      <span id="relogio" class="selo"></span>
+    </div>
+    <div id="aviso-viagem" class="aviso amarelo oculto"></div>
+    <div id="mapa"></div>
+
+    <div class="cartao" id="proxima">
+      <h2>Próxima parada</h2>
+      <div id="proxima-conteudo"></div>
+    </div>
+
+    <div class="cartao">
+      <h2>Todas as paradas</h2>
+      <ul id="paradas" class="lista"></ul>
+    </div>
+
+    <div class="cartao">
+      <h2>Registro</h2>
+      <ul id="eventos" class="lista linha-tempo"></ul>
+    </div>
+
+    <button id="btn-encerrar" class="vermelho cheio">Encerrar trajeto</button>
+  </section>
+</main>
+
+<div id="modal-fim" class="modal-fundo oculto">
+  <div class="modal">
+    <h3>Antes de encerrar</h3>
+    <p class="sub">Ande pela van e confira todos os bancos, inclusive os de trás.</p>
+    <div id="fim-pendentes" class="aviso vermelho oculto"></div>
+    <label class="check"><input type="checkbox" id="conferi"><span><b>Conferi a van inteira</b> e não há nenhuma criança dentro.</span></label>
+    <div class="grade2">
+      <button class="sec" id="fim-cancelar">Voltar</button>
+      <button class="vermelho" id="fim-ok" disabled>Encerrar</button>
+    </div>
+  </div>
+</div>
+
+<script src="/static/leaflet/leaflet.js"></script>
+<script src="/static/comum.js"></script>
+<script src="/static/motorista.js"></script>
+</body>
+</html>

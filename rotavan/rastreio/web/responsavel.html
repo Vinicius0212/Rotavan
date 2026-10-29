@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="referrer" content="no-referrer">
+<meta name="theme-color" content="#f2b705">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>RotaVan · Família</title>
+<link rel="manifest" id="manifesto" href="/manifest.webmanifest">
+<script>document.getElementById("manifesto").href = "/manifest/r/" + location.pathname.split("/")[2];</script>
+<link rel="icon" href="/static/icone-192.png">
+<link rel="apple-touch-icon" href="/static/icone-192.png">
+<link rel="stylesheet" href="/static/leaflet/leaflet.css">
+<link rel="stylesheet" href="/static/estilo.css">
+</head>
+<body>
+<header class="topo">
+  <div class="logo"><svg viewBox="0 0 24 24" fill="#f2b705"><path d="M3 6a2 2 0 0 1 2-2h10.5a2 2 0 0 1 1.7.95L20 9.5l.9.4A2 2 0 0 1 22 11.7V16a1 1 0 0 1-1 1h-1.2a2.8 2.8 0 0 1-5.6 0H9.8a2.8 2.8 0 0 1-5.6 0H4a1 1 0 0 1-1-1V6Z"/></svg></div>
+  <div><h1 id="titulo">RotaVan</h1><small id="cab">carregando…</small></div>
+</header>
+<main>
+  <div id="erro" class="aviso vermelho oculto"></div>
+
+  <!-- termo de consentimento -->
+  <section id="tela-termo" class="oculto">
+    <div class="cartao termo">
+      <h2>Antes de começar</h2>
+      <p class="destaque" style="font-size:19px">Acompanhamento do transporte escolar</p>
+      <p>Este link mostra <b>onde está a van</b> enquanto a criança <span id="t-cod"></span> estiver no trajeto, a
+        <b>previsão de chegada</b> e os registros de <b>embarque e desembarque</b>.</p>
+      <ul>
+        <li>A criança é identificada só por um <b>código</b>. O nome dela não é cadastrado no sistema.</li>
+        <li>O que é localizado é a <b>van</b> (pelo celular do motorista), e só durante o trajeto.</li>
+        <li>Se a família instalar o aplicativo <b>Traccar Client</b> no celular da criança, a posição <b>desse celular</b> também
+          aparece aqui, só para esta família — por padrão, apenas nos horários de ida e volta da escola. Para parar, basta
+          desligar o aplicativo.</li>
+        <li>Você vê a van <b>apenas até a sua criança ser entregue</b> — depois disso a posição some da sua tela, para proteger as outras famílias.</li>
+        <li>A trilha de posições é apagada <b>24 horas</b> depois do trajeto; os registros de embarque/desembarque, em <b>30 dias</b>.</li>
+        <li>Você pode <b>revogar</b> este acesso a qualquer momento, no fim desta página.</li>
+        <li>Não repasse este link: quem tiver o link vê a van. Se ele vazar, peça um novo ao transportador.</li>
+      </ul>
+      <label class="check"><input type="checkbox" id="aceito"><span>Sou responsável legal pela criança e <b>concordo</b> com o uso
+        destes dados para o acompanhamento do transporte (LGPD, art. 14).</span></label>
+      <button id="btn-aceito" class="marca cheio" disabled>Aceitar e continuar</button>
+    </div>
+  </section>
+
+  <!-- acompanhamento -->
+  <section id="tela-acomp" class="oculto">
+    <div class="cartao" id="status">
+      <div class="linha-flex" style="margin-bottom:8px">
+        <span id="selo-vivo" class="selo"></span><span class="espaco"></span><span id="selo-atraso" class="selo alerta oculto"></span>
+      </div>
+      <p class="destaque" id="st-titulo">—</p>
+      <div id="st-tempo" class="oculto" style="margin:10px 0 2px"><span class="grande" id="st-min">—</span>
+        <span class="sub" style="font-size:18px"> min</span></div>
+      <p class="sub" id="st-sub"></p>
+    </div>
+    <div class="cartao oculto" id="cel">
+      <div class="linha-flex"><h2 style="margin:0" id="cel-titulo">Celular</h2><span class="espaco"></span><span id="cel-selo" class="selo"></span></div>
+      <p class="destaque" id="cel-txt" style="font-size:18px;margin-top:8px">—</p>
+      <p class="sub" id="cel-sub"></p>
+    </div>
+    <div id="mapa" class="oculto"></div>
+
+    <div class="cartao">
+      <h2>Hoje</h2>
+      <ul id="eventos" class="lista linha-tempo"></ul>
+    </div>
+
+    <div class="cartao">
+      <h2>Não vai hoje?</h2>
+      <p class="sub" style="margin-top:0">Avise o motorista: a rota de hoje é recalculada sem a parada.</p>
+      <div id="faltas-estado" class="pequeno" style="margin:8px 0"></div>
+      <div class="grade2" style="margin-top:10px">
+        <button class="sec" data-falta="ida">Não vai na ida</button>
+        <button class="sec" data-falta="volta">Não volta de van</button>
+      </div>
+    </div>
+
+    <div class="cartao">
+      <h2>Ajustes deste celular</h2>
+      <label class="pequeno" for="apelido">Como chamar a criança nesta tela (fica só neste celular, não vai para o servidor)</label>
+      <input type="text" id="apelido" maxlength="30" placeholder="ex.: Ana" style="margin:6px 0 12px">
+      <button id="btn-notif" class="sec cheio">Ativar notificações</button>
+      <p class="pequeno" id="notif-dica">No iPhone, toque em Compartilhar → "Adicionar à Tela de Início" para receber notificações.</p>
+    </div>
+
+    <button id="btn-revogar" class="sec cheio">Revogar meu acesso</button>
+    <p class="pequeno" style="text-align:center;margin-top:10px">Escola: <span id="escola-info"></span></p>
+  </section>
+</main>
+
+<script src="/static/leaflet/leaflet.js"></script>
+<script src="/static/comum.js"></script>
+<script src="/static/responsavel.js"></script>
+</body>
+</html>

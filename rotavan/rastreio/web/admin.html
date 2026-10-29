@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="referrer" content="no-referrer">
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#f2b705">
+<title>RotaVan · Cadastro</title>
+<link rel="icon" href="/static/icone-192.png">
+<link rel="stylesheet" href="/static/leaflet/leaflet.css">
+<link rel="stylesheet" href="/static/estilo.css">
+<style>
+  #mapa-cad { height: 46vh; min-height: 280px; border-radius: var(--raio); border: 1px solid var(--linha); margin: 8px 0 12px; }
+  .campo { margin-bottom: 12px; }
+  .campo label { display: block; font-weight: 650; margin-bottom: 4px; }
+  .acesso { display: grid; grid-template-columns: 120px 1fr; gap: 12px; align-items: start; padding: 12px 0; border-top: 1px solid var(--linha); }
+  .acesso img { width: 120px; height: 120px; background: #fff; border-radius: 8px; }
+  .url { display: block; font: 13px ui-monospace, monospace; word-break: break-all; margin-top: 2px; }
+  textarea { width: 100%; min-height: 110px; font: 12px ui-monospace, monospace; border-radius: 10px; border: 1.5px solid var(--linha); background: var(--cartao); color: var(--texto); padding: 8px; }
+  .passos li { margin-bottom: 6px; }
+  .grande-id { font: 700 22px ui-monospace, monospace; letter-spacing: .06em; }
+</style>
+</head>
+<body>
+<header class="topo">
+  <div class="logo"><svg viewBox="0 0 24 24" fill="#f2b705"><path d="M3 6a2 2 0 0 1 2-2h10.5a2 2 0 0 1 1.7.95L20 9.5l.9.4A2 2 0 0 1 22 11.7V16a1 1 0 0 1-1 1h-1.2a2.8 2.8 0 0 1-5.6 0H9.8a2.8 2.8 0 0 1-5.6 0H4a1 1 0 0 1-1-1V6Z"/></svg></div>
+  <div><h1>RotaVan · Cadastro</h1><small>casa, escola, horários e links de acesso</small></div>
+</header>
+<main>
+  <div id="erro" class="aviso vermelho oculto"></div>
+
+  <section id="tela-senha" class="cartao">
+    <h2>Entrar</h2>
+    <div class="campo"><label for="senha">Senha de administração</label>
+      <input type="text" id="senha" autocomplete="current-password" style="-webkit-text-security:disc"></div>
+    <button id="btn-entrar" class="marca cheio">Entrar</button>
+    <p class="pequeno">É a senha definida no segredo <code>ROTAVAN_ADMIN_SENHA</code> da hospedagem. No próprio computador (localhost), pode deixar em branco.</p>
+  </section>
+
+  <section id="tela-cad" class="oculto">
+    <div id="lista"></div>
+
+    <div class="cartao">
+      <h2 id="titulo-form">Nova linha</h2>
+      <div class="campo"><label for="nome">Nome da linha (aparece para a família)</label>
+        <input type="text" id="nome" value="Van escolar" maxlength="80"></div>
+      <div class="campo"><label for="codigo">Código da criança — não use o nome</label>
+        <input type="text" id="codigo" value="C01" maxlength="12"></div>
+      <div class="campo">
+        <label>Toque no mapa para marcar <span id="modo-txt"><b>a casa</b></span></label>
+        <div class="linha-flex">
+          <button class="sec peq" id="m-casa">Marcar casa</button>
+          <button class="sec peq" id="m-escola">Marcar escola</button>
+          <button class="sec peq" id="m-garagem">Marcar garagem da van (opcional)</button>
+        </div>
+        <div id="mapa-cad"></div>
+        <p class="pequeno">A casa é guardada como o <b>cruzamento mais próximo</b>, não o endereço exato.</p>
+      </div>
+      <div class="campo"><label for="escola">Escola</label>
+        <select id="escola"><option value="">— escolha ou marque no mapa —</option></select>
+        <input type="text" id="escola-nome" placeholder="Nome da escola (se marcou no mapa)" style="margin-top:6px" class="oculto"></div>
+      <div class="grade2">
+        <div class="campo"><label for="entrada">Entrada</label><input type="text" id="entrada" value="07:30" maxlength="5"></div>
+        <div class="campo"><label for="saida">Saída</label><input type="text" id="saida" value="11:45" maxlength="5"></div>
+      </div>
+      <div class="campo"><label for="janela">Guardar a posição do celular da criança</label>
+        <select id="janela">
+          <option value="aula">Só nos horários de ida e volta da escola (dias úteis)</option>
+          <option value="sempre">Sempre (bom para testar agora)</option>
+        </select></div>
+      <button id="btn-salvar" class="marca cheio">Salvar e gerar links</button>
+    </div>
+  </section>
+</main>
+<script src="/static/leaflet/leaflet.js"></script>
+<script src="/static/comum.js"></script>
+<script src="/static/admin.js"></script>
+</body>
+</html>
