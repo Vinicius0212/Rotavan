@@ -39,6 +39,7 @@ HISTERESE_M = 60           # para sair de uma zona é preciso se afastar um pouc
 PRECISAO_MAX_M = 200       # leituras piores que isto são descartadas
 PRECISAO_ZONA_M = 100      # só leituras boas mudam a zona
 SEM_SINAL_S = 10 * 60      # sem posição há 10 min no meio do caminho: avisa
+ANTIGA_S = 3 * 3600        # posições guardadas no celular há mais de 3 h (buffer offline) não valem como posição atual
 BATERIA_FRACA = 15         # %
 ANTES_ENTRADA_S, DEPOIS_ENTRADA_S = 2 * 3600, 30 * 60
 ANTES_SAIDA_S, DEPOIS_SAIDA_S = 30 * 60, 2 * 3600
@@ -88,9 +89,14 @@ class CelularMixin:
             raise ErroRastreio("Celular não cadastrado.", 404)
         lid, k = a["linha_id"], a["ref"]
         agora = self.relogio()
-        aceitas, fora, ruins = [], 0, 0
+        aceitas, fora, ruins, antigas = [], 0, 0, 0
         for p in sorted(pontos, key=lambda p: p.get("ts") or agora):
             ts = min(float(p.get("ts") or agora), agora)
+            if agora - ts > ANTIGA_S:
+                # o Traccar Client reenvia, ao ser ligado, posições que ficaram guardadas (às vezes de dias atrás);
+                # elas não dizem onde a criança está agora e gerariam avisos falsos
+                antigas += 1
+                continue
             if p.get("precisao") is not None and float(p["precisao"]) > PRECISAO_MAX_M:
                 ruins += 1
                 continue
@@ -104,7 +110,7 @@ class CelularMixin:
             for x in aceitas:
                 self._atualizar_zona(lid, k, x[2], x[3], x[4], x[5], x[6])
             self._alimentar_van(lid, k, aceitas[-1])
-        return {"recebidas": len(aceitas), "fora_do_horario": fora, "imprecisas": ruins}
+        return {"recebidas": len(aceitas), "fora_do_horario": fora, "imprecisas": ruins, "antigas": antigas}
 
     def _estado_cel(self, lid, k):
         return self.db.um("SELECT * FROM estado_cel WHERE linha_id=? AND crianca=?", (lid, k))
@@ -155,6 +161,8 @@ class CelularMixin:
             lid, k = st["linha_id"], st["crianca"]
             ult = self.db.um("SELECT MAX(epoch) e FROM posicoes_cel WHERE linha_id=? AND crianca=?", (lid, k))
             if not ult or ult["e"] is None or not self.janela_ativa(lid, k, agora):
+                continue
+            if agora - ult["e"] > ANTIGA_S:     # parado há horas não é "no meio do caminho"
                 continue
             avisos = set(json.loads(st["avisos"]))
             chave = f"sinal:{int(st['desde'])}"
