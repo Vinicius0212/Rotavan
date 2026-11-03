@@ -281,7 +281,9 @@ def test_celular_fora_do_horario_e_sem_sinal(sistema):
     lid = central.linhas()[0]["id"]
     from datetime import datetime
     domingo = datetime(2026, 10, 18, 7, 0, tzinfo=FUSO).timestamp()
+    t0, rel.t = rel.t, domingo + 30
     assert central.receber_celular(dev, [{"ts": domingo, "lat": k.lat, "lon": k.lon}])["fora_do_horario"] == 1
+    rel.t = t0
     # no meio do caminho, o celular para de mandar posição
     central.receber_celular(dev, [{"ts": rel.t, "lat": k.lat, "lon": k.lon, "precisao": 10}])
     central.receber_celular(dev, [{"ts": rel.t + 60, "lat": k.lat + 0.01, "lon": k.lon, "precisao": 10}])
@@ -293,7 +295,23 @@ def test_celular_fora_do_horario_e_sem_sinal(sistema):
     # opção "sempre": aceita no domingo
     central.publicar_linha("Linha teste", cenario_de_dict(json.loads(central._linha(lid)["cenario"])), linha_id=lid,
                            opcoes={"janela_celular": "sempre"})
+    rel.t = domingo + 30
     assert central.receber_celular(dev, [{"ts": domingo, "lat": k.lat, "lon": k.lon}])["recebidas"] == 1
+
+
+def test_celular_posicoes_antigas_do_buffer_nao_geram_aviso(sistema):
+    """Visto no teste em campo: ao ligar o serviço, o Traccar Client reenviou uma posição guardada 2 dias antes,
+    e o servidor avisou "sem sinal há 3171 min". Posições com mais de 3 h são ignoradas."""
+    central, cli, tok, rel, cen = sistema
+    k = cen.criancas[1]
+    dev = tok[("celular", k.id)]
+    r = central.receber_celular(dev, [{"ts": rel.t - 2 * 86400, "lat": k.lat + 0.01, "lon": k.lon, "precisao": 10}])
+    assert r["antigas"] == 1 and r["recebidas"] == 0
+    rel.t += 15 * 60
+    central.verificar_celulares()
+    assert central.db.um("SELECT COUNT(*) n FROM eventos WHERE tipo='cel_sem_sinal'")["n"] == 0
+    # a posição de agora vale normalmente
+    assert central.receber_celular(dev, [{"ts": rel.t, "lat": k.lat, "lon": k.lon, "precisao": 10}])["recebidas"] == 1
 
 
 def test_celular_vira_posicao_da_van_quando_o_motorista_some(sistema):
