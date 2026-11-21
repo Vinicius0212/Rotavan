@@ -37,7 +37,9 @@ def grafo(caminho: str):
 # ------------------------------------------------------------------ barra lateral
 with st.sidebar:
     st.header("Mapa")
-    arq_mapa = st.text_input("Arquivo da malha viária", str(DADOS / "ijui_drive.graphml"))
+    arq_mapa = st.text_input("Arquivo da malha viária", "dados/ijui_drive.graphml")
+    if not Path(arq_mapa).is_absolute():          # caminho relativo à pasta do projeto
+        arq_mapa = str(PASTA / arq_mapa)
     if not Path(arq_mapa).exists():
         st.error("Mapa não encontrado. Rode antes:  python baixar_mapa_ijui.py")
         st.stop()
