@@ -158,3 +158,7 @@ ordens possíveis.
 | `rotavan/rastreio/configuracao.py` | cadastro rápido e configuração portátil (variável `ROTAVAN_CONFIG`) |
 | `servidor.py` | servidor web (FastAPI); `/traccar` recebe o celular da criança; `/admin` cadastro rápido |
 | `preparar_nuvem.py` | monta a versão para hospedagem gratuita (Render) |
+
+## Licença
+
+Código distribuído sob a licença MIT (arquivo `LICENSE`). Os dados do mapa vêm do OpenStreetMap, sob a licença ODbL.
